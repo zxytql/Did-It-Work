@@ -1,9 +1,9 @@
 #!/bin/bash
 # =============================================================================
-# train_with_notification.sh
+# Did-It-Work? - Training Notification Wrapper
 # 
-# 通用训练脚本 wrapper，提供 BARK 推送通知功能
-# 支持：正常结束、异常退出、手动中断（Ctrl+C）的通知
+# 训练完成了吗？用 BARK 推送告诉你！
+# 支持：正常完成、异常退出、手动中断（Ctrl+C）的实时通知
 #
 # 使用方法：
 #   ./train_with_notification.sh <your_training_script.sh> [args...]
@@ -12,6 +12,8 @@
 #   在同目录创建 .bark_config 文件，内容为：
 #   BARK_DEVICE_KEY="your_bark_device_key"
 #   BARK_SERVER="https://api.day.app"  # 可选，默认值
+#
+# 更多信息：查看 README.md
 # =============================================================================
 
 set -o pipefail  # 管道中任何命令失败都会导致整个管道失败
@@ -234,7 +236,8 @@ trap 'exit 143' TERM
 # =============================================================================
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}Starting training with BARK notifications${NC}"
+echo -e "${GREEN}Did-It-Work? 🤔${NC}"
+echo -e "${GREEN}Training notification enabled via BARK${NC}"
 echo -e "${GREEN}Host: ${HOSTNAME}${NC}"
 echo -e "${GREEN}Command: ${TRAINING_COMMAND}${NC}"
 echo -e "${GREEN}Start time: $(date)${NC}"
