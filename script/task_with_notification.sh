@@ -1,12 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# Did-It-Work? - Training Notification Wrapper
-# 
-# 训练完成了吗？用 BARK 推送告诉你！
+# Did-It-Work? - Task Notification Wrapper
+#
+# 任务完成了吗？用 BARK 推送告诉你！
 # 支持：正常完成、异常退出、手动中断（Ctrl+C）的实时通知
 #
 # 使用方法：
-#   ./train_with_notification.sh <your_training_script.sh> [args...]
+#   ./task_with_notification.sh "<your_command>" [args...]
 #
 # 配置：
 #   在同目录创建 .bark_config 文件，内容为：
@@ -62,9 +62,9 @@ fi
 # 全局变量
 # =============================================================================
 
-TRAINING_COMMAND="$@"
-if [ -z "$TRAINING_COMMAND" ]; then
-    echo -e "${RED}✗ Usage: $0 <training_script> [args...]${NC}"
+TASK_COMMAND="$@"
+if [ -z "$TASK_COMMAND" ]; then
+    echo -e "${RED}✗ Usage: $0 <command> [args...]${NC}"
     exit 1
 fi
 
@@ -77,7 +77,7 @@ mkdir -p "$ERROR_LOG_DIR"
 
 # 使用时间戳命名错误日志
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-ERROR_LOG="${ERROR_LOG_DIR}/training_error_${TIMESTAMP}.log"
+ERROR_LOG="${ERROR_LOG_DIR}/task_error_${TIMESTAMP}.log"
 
 EXIT_STATUS=0
 EXIT_REASON="unknown"
@@ -151,29 +151,29 @@ cleanup_and_notify() {
     
     case "$EXIT_REASON" in
         success)
-            title="✅ Training Completed"
+            title="✅ Task Completed"
             body="Host: ${HOSTNAME}
 Duration: ${duration_formatted}
-Command: ${TRAINING_COMMAND}"
+Command: ${TASK_COMMAND}"
             level="active"
             echo -e "${GREEN}========================================${NC}"
-            echo -e "${GREEN}Training completed successfully!${NC}"
+            echo -e "${GREEN}Task completed successfully!${NC}"
             echo -e "${GREEN}Duration: ${duration_formatted}${NC}"
             echo -e "${GREEN}========================================${NC}"
             ;;
         interrupted)
-            title="⚠️ Training Interrupted"
+            title="⚠️ Task Interrupted"
             body="Host: ${HOSTNAME}
 Duration: ${duration_formatted}
 Reason: Manual interruption (Ctrl+C)"
             level="timeSensitive"
             echo -e "${YELLOW}========================================${NC}"
-            echo -e "${YELLOW}Training interrupted by user${NC}"
+            echo -e "${YELLOW}Task interrupted by user${NC}"
             echo -e "${YELLOW}Duration: ${duration_formatted}${NC}"
             echo -e "${YELLOW}========================================${NC}"
             ;;
         error)
-            title="❌ Training Failed"
+            title="❌ Task Failed"
             body="Host: ${HOSTNAME}
 Duration: ${duration_formatted}
 Exit Code: ${exit_code}"
@@ -190,7 +190,7 @@ ${error_preview}"
             
             level="timeSensitive"
             echo -e "${RED}========================================${NC}"
-            echo -e "${RED}Training failed with exit code: ${exit_code}${NC}"
+            echo -e "${RED}Task failed with exit code: ${exit_code}${NC}"
             echo -e "${RED}Duration: ${duration_formatted}${NC}"
             if [ -n "$error_msg" ]; then
                 echo -e "${RED}Error log saved to: ${ERROR_LOG}${NC}"
@@ -232,20 +232,20 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 # =============================================================================
-# 执行训练命令
+# 执行任务命令
 # =============================================================================
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}Did-It-Work? 🤔${NC}"
-echo -e "${GREEN}Training notification enabled via BARK${NC}"
+echo -e "${GREEN}Task notification enabled via BARK${NC}"
 echo -e "${GREEN}Host: ${HOSTNAME}${NC}"
-echo -e "${GREEN}Command: ${TRAINING_COMMAND}${NC}"
+echo -e "${GREEN}Command: ${TASK_COMMAND}${NC}"
 echo -e "${GREEN}Start time: $(date)${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
 # 执行命令并捕获错误输出
-eval "$TRAINING_COMMAND" 2>&1 | tee >(grep -i "error\|exception\|traceback\|failed" > "$ERROR_LOG" || true)
+eval "$TASK_COMMAND" 2>&1 | tee >(grep -i "error\|exception\|traceback\|failed" > "$ERROR_LOG" || true)
 
 # 获取命令的退出状态
 EXIT_STATUS=${PIPESTATUS[0]}
